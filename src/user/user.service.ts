@@ -2,8 +2,12 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserInterface, UserMicroService } from './models/user.model';
-
+import {
+  UploadRequest,
+  UserInterface,
+  UserMicroService,
+} from './models/user.model';
+import { ReplaySubject } from 'rxjs';
 @Injectable()
 export class UserService implements OnModuleInit {
   private userMicroService: UserMicroService;
@@ -33,5 +37,31 @@ export class UserService implements OnModuleInit {
 
   remove(id: string) {
     return this.userMicroService.delete({ id });
+  }
+
+  uploadFile(file: Express.Multer.File) {
+    const uploadRequests = new ReplaySubject<UploadRequest>();
+
+    // read chunk and upload
+    const bToMb = (size) => size * 1024;
+    let chunkCount = 0;
+    let offset = 0;
+
+    while (offset < file.size) {
+      const chunk = file.buffer.subarray(offset, offset + bToMb(3999));
+      chunkCount += 1;
+      offset += bToMb(4000 * chunkCount);
+
+      uploadRequests.next({
+        filename: file.originalname,
+        chunk,
+      });
+    }
+
+    uploadRequests.complete();
+    const stream = this.userMicroService.uploadFile(
+      uploadRequests.asObservable(),
+    );
+    return stream;
   }
 }

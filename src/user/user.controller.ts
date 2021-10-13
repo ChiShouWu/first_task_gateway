@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,9 +22,12 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { NotFoundInterceptor } from '../interceptor/notfound.interceptor';
-import { UserInterface } from './models/user.model';
 import { lastValueFrom } from 'rxjs';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { extname } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { ApiFile } from '../decorators/api.decorator';
+import { diskStorage, memoryStorage } from 'multer';
 @ApiTags('users')
 @UseInterceptors(NotFoundInterceptor)
 @Controller('users')
@@ -83,24 +87,17 @@ export class UserController {
     if (success) return 'User remove success';
   }
 
-  // @Post('upload')
-  // @ApiFile()
-  // @UseInterceptors(
-  //   FileInterceptor('file', {
-  //     storage: diskStorage({
-  //       destination: './uploads',
-  //       filename: (req, file, callback) => {
-  //         const filename: string = uuidv4();
-  //         const extension: string = extname(file.originalname);
-
-  //         callback(null, `${filename}${extension}`);
-  //       },
-  //     }),
-  //   }),
-  // )
-  // uploadFile(@UploadedFile() file: Express.Multer.File) {
-  //   return file.filename;
-  // }
+  @Post('upload')
+  @ApiFile()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+    }),
+  )
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file);
+    return this.usersService.uploadFile(file);
+  }
 
   // @Get('/file/:filename')
   // @ApiParam({ name: 'filename', type: 'string' })
