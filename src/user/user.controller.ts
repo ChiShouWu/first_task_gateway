@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,6 +27,8 @@ import { lastValueFrom } from 'rxjs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiFile } from '../decorators/api.decorator';
 import { RpcException } from '@nestjs/microservices';
+import { Response } from 'express';
+import { UploadStatus } from './models/user.model';
 @ApiTags('users')
 @UseInterceptors(NotFoundInterceptor)
 @Controller('users')
@@ -93,8 +96,33 @@ export class UserController {
   @Post('upload')
   @ApiFile()
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return await lastValueFrom(this.usersService.uploadFile(file));
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+  ) {
+    const responseStream = this.usersService.uploadFile(file);
+    let filename = '';
+    responseStream.subscribe({
+      next(uploadStatus) {
+        console.log(uploadStatus);
+        filename = uploadStatus.filename;
+      },
+      error(err) {
+        console.log(err);
+        res.send({
+          status: 500,
+          message: 'Internal server error',
+        });
+      },
+      complete() {
+        res.send({
+          statusCode: 200,
+          messsage: 'upload file success',
+          filename,
+        });
+      },
+    });
+    return responseStream;
   }
 
   // @Get('/file/:filename')

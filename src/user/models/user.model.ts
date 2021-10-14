@@ -30,4 +30,5 @@ export enum UploadStage {
 }
 export interface UploadStatus {
   stage: UploadStage;
+  filename: string;
 }

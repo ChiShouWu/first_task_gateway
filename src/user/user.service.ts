@@ -4,10 +4,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
   UploadRequest,
+  UploadStatus,
   UserInterface,
   UserMicroService,
 } from './models/user.model';
-import { ReplaySubject, toArray } from 'rxjs';
+import { Observable, ReplaySubject, Subject, toArray } from 'rxjs';
 @Injectable()
 export class UserService implements OnModuleInit {
   private userMicroService: UserMicroService;
@@ -39,7 +40,7 @@ export class UserService implements OnModuleInit {
     return this.userMicroService.delete({ id });
   }
 
-  uploadFile(file: Express.Multer.File) {
+  uploadFile(file: Express.Multer.File): Observable<UploadStatus> {
     const uploadRequests = new ReplaySubject<UploadRequest>();
 
     // read chunk and upload, the limit size of gRPC is 4mb
@@ -59,6 +60,8 @@ export class UserService implements OnModuleInit {
     }
 
     uploadRequests.complete();
+
+    // send stream request to server and get a stream response
     const stream = this.userMicroService.uploadFile(
       uploadRequests.asObservable(),
     );
