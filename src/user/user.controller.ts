@@ -24,10 +24,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { NotFoundInterceptor } from '../interceptor/notfound.interceptor';
 import { lastValueFrom } from 'rxjs';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { ApiFile } from '../decorators/api.decorator';
-import { diskStorage, memoryStorage } from 'multer';
+import { RpcException } from '@nestjs/microservices';
 @ApiTags('users')
 @UseInterceptors(NotFoundInterceptor)
 @Controller('users')
@@ -83,17 +81,18 @@ export class UserController {
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
   async remove(@Param('id') id: string) {
-    const { success } = await lastValueFrom(this.usersService.remove(id));
-    if (success) return 'User remove success';
+    try {
+      const { success } = await lastValueFrom(this.usersService.remove(id));
+      if (success) return 'User remove success';
+    } catch (e) {
+      console.log(e);
+      throw new RpcException(e);
+    }
   }
 
   @Post('upload')
   @ApiFile()
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     console.log(file);
     return this.usersService.uploadFile(file);

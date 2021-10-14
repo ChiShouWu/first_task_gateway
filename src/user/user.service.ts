@@ -7,7 +7,7 @@ import {
   UserInterface,
   UserMicroService,
 } from './models/user.model';
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, toArray } from 'rxjs';
 @Injectable()
 export class UserService implements OnModuleInit {
   private userMicroService: UserMicroService;
@@ -42,7 +42,7 @@ export class UserService implements OnModuleInit {
   uploadFile(file: Express.Multer.File) {
     const uploadRequests = new ReplaySubject<UploadRequest>();
 
-    // read chunk and upload
+    // read chunk and upload, the limit size of gRPC is 4mb
     const bToMb = (size) => size * 1024;
     let chunkCount = 0;
     let offset = 0;
@@ -62,6 +62,6 @@ export class UserService implements OnModuleInit {
     const stream = this.userMicroService.uploadFile(
       uploadRequests.asObservable(),
     );
-    return stream;
+    return stream.pipe(toArray());
   }
 }
