@@ -8,7 +8,7 @@ import {
   UserInterface,
   UserMicroService,
 } from './models/user.model';
-import { Observable, ReplaySubject, Subject, toArray } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 @Injectable()
 export class UserService implements OnModuleInit {
   private userMicroService: UserMicroService;

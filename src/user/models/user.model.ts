@@ -1,12 +1,11 @@
 import { Observable } from 'rxjs';
-import { ClientStreamingHandler } from '@grpc/grpc-js/build/src/server-call';
 export interface UserMicroService {
-  create(UserInterface): Observable<any>;
-  findById(Id): Observable<any>;
-  findAll({}): Observable<any>;
-  update(UserInterface): Observable<any>;
-  delete(Id): Observable<any>;
-  uploadFile(upstream: Observable<UploadRequest>): Observable<any>;
+  create(UserInterface): UserInterface;
+  findById(Id): UserInterface;
+  findAll({}): UserInterface[];
+  update(UserInterface): UserInterface;
+  delete(Id): Observable<DeleteResponse>;
+  uploadFile(upstream: Observable<UploadRequest>): Observable<UploadStatus>;
 }
 
 export interface UserInterface {
@@ -17,6 +16,10 @@ export interface UserInterface {
 }
 export interface Id {
   id: string;
+}
+
+export interface DeleteResponse {
+  success: boolean;
 }
 export interface UploadRequest {
   filename: string;

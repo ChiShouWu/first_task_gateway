@@ -28,7 +28,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiFile } from '../decorators/api.decorator';
 import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
-import { UploadStatus } from './models/user.model';
 @ApiTags('users')
 @UseInterceptors(NotFoundInterceptor)
 @Controller('users')
@@ -41,7 +40,7 @@ export class UserController {
   })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto): Promise<any> {
     return await this.usersService.create(createUserDto);
   }
 
@@ -50,7 +49,7 @@ export class UserController {
   @ApiOkResponse({ description: 'Users found' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async findAll() {
+  async findAll(): Promise<any> {
     return await this.usersService.findAll();
   }
 
@@ -61,7 +60,7 @@ export class UserController {
   })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<any> {
     return await this.usersService.findOne(id);
   }
 
@@ -72,7 +71,10 @@ export class UserController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<any> {
     return await this.usersService.update(id, updateUserDto);
   }
 
@@ -83,7 +85,7 @@ export class UserController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<any> {
     try {
       const { success } = await lastValueFrom(this.usersService.remove(id));
       if (success) return 'User remove success';
@@ -99,7 +101,7 @@ export class UserController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response,
-  ) {
+  ): Promise<any> {
     const responseStream = this.usersService.uploadFile(file);
     let filename = '';
     responseStream.subscribe({
