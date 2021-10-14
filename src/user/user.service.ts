@@ -62,6 +62,6 @@ export class UserService implements OnModuleInit {
     const stream = this.userMicroService.uploadFile(
       uploadRequests.asObservable(),
     );
-    return stream.pipe(toArray());
+    return stream;
   }
 }

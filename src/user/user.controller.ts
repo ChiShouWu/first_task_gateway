@@ -93,9 +93,8 @@ export class UserController {
   @Post('upload')
   @ApiFile()
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
-    return this.usersService.uploadFile(file);
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return await lastValueFrom(this.usersService.uploadFile(file));
   }
 
   // @Get('/file/:filename')
