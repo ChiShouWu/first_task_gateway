@@ -3,6 +3,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
+  DeleteResponse,
   UploadRequest,
   UploadStatus,
   UserInterface,
@@ -19,24 +20,24 @@ export class UserService implements OnModuleInit {
     this.userMicroService =
       this.client.getService<UserMicroService>('UserService');
   }
-  create(createUserDto: CreateUserDto) {
+  create(createUserDto: CreateUserDto): UserInterface {
     return this.userMicroService.create(createUserDto);
   }
 
-  findAll() {
+  findAll(): UserInterface[] {
     return this.userMicroService.findAll({});
   }
 
-  findOne(id: string) {
+  findOne(id: string): UserInterface {
     return this.userMicroService.findById({ id });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto): UserInterface {
     updateUserDto.id = id;
     return this.userMicroService.update(updateUserDto);
   }
 
-  remove(id: string) {
+  remove(id: string): Observable<DeleteResponse> {
     return this.userMicroService.delete({ id });
   }
 

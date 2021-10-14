@@ -2,10 +2,11 @@ import {
   Catch,
   ExceptionFilter,
   ArgumentsHost,
-  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
+import { status } from '@grpc/grpc-js';
 
 @Catch(RpcException)
 export class RpcExceptionToHttpFilter implements ExceptionFilter {
@@ -15,14 +16,35 @@ export class RpcExceptionToHttpFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     response.send({
-      code: err['code'],
+      code: RpcStatusCodeTranform(err['code']),
       message: err['details'],
     });
-    // throw new HttpException(err['details'], err['code']);
-    // return response.status(err['code']).json({
-    //   message: err['details'],
-    //   code: err['code'],
-    // });
-    // throw new HttpException(er);
   }
+}
+
+export function RpcStatusCodeTranform(rpcCode: status): HttpStatus {
+  interface TransformPair {
+    [key: number]: HttpStatus;
+  }
+  const transfromPairs: TransformPair = {
+    0: HttpStatus.OK,
+    3: HttpStatus.BAD_REQUEST,
+    4: HttpStatus.GATEWAY_TIMEOUT,
+    5: HttpStatus.NOT_FOUND,
+    6: HttpStatus.CONFLICT,
+    7: HttpStatus.FORBIDDEN,
+    8: HttpStatus.TOO_MANY_REQUESTS,
+    9: HttpStatus.BAD_REQUEST,
+    16: HttpStatus.UNAUTHORIZED,
+    10: HttpStatus.CONFLICT,
+    11: HttpStatus.BAD_REQUEST,
+    12: HttpStatus.NOT_IMPLEMENTED,
+    13: HttpStatus.INTERNAL_SERVER_ERROR,
+    14: HttpStatus.SERVICE_UNAVAILABLE,
+    15: HttpStatus.INTERNAL_SERVER_ERROR,
+  };
+
+  return transfromPairs[rpcCode]
+    ? transfromPairs[rpcCode]
+    : HttpStatus.INTERNAL_SERVER_ERROR;
 }
