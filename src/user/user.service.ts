@@ -41,7 +41,7 @@ export class UserService implements OnModuleInit {
     return this.userMicroService.delete({ id });
   }
 
-  uploadFile(file: Express.Multer.File): Observable<UploadStatus> {
+  uploadFile(file: Express.Multer.File) {
     const uploadRequests = new ReplaySubject<UploadRequest>();
 
     // read chunk and upload, the limit size of gRPC is 4mb

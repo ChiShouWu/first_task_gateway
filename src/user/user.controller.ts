@@ -26,7 +26,6 @@ import { NotFoundInterceptor } from '../interceptor/notfound.interceptor';
 import { lastValueFrom } from 'rxjs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiFile } from '../decorators/api.decorator';
-import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
 @ApiTags('users')
 @UseInterceptors(NotFoundInterceptor)
@@ -40,7 +39,7 @@ export class UserController {
   })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiForbiddenResponse({ description: 'Forbidden.' })
-  async create(@Body() createUserDto: CreateUserDto): Promise<any> {
+  async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }
 
@@ -49,7 +48,7 @@ export class UserController {
   @ApiOkResponse({ description: 'Users found' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async findAll(): Promise<any> {
+  async findAll() {
     return await this.usersService.findAll();
   }
 
@@ -60,7 +59,7 @@ export class UserController {
   })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async findOne(@Param('id') id: string): Promise<any> {
+  async findOne(@Param('id') id: string) {
     return await this.usersService.findOne(id);
   }
 
@@ -71,10 +70,7 @@ export class UserController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ): Promise<any> {
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return await this.usersService.update(id, updateUserDto);
   }
 
@@ -85,13 +81,13 @@ export class UserController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @ApiNotFoundResponse({ description: 'User not found' })
   @ApiBadRequestResponse({ description: 'Bad Request' })
-  async remove(@Param('id') id: string): Promise<any> {
+  async remove(@Param('id') id: string) {
     try {
       const { success } = await lastValueFrom(this.usersService.remove(id));
       if (success) return 'User remove success';
     } catch (e) {
       console.log(e);
-      throw new RpcException(e);
+      throw e;
     }
   }
 
@@ -101,7 +97,7 @@ export class UserController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Res() res: Response,
-  ): Promise<any> {
+  ) {
     const responseStream = this.usersService.uploadFile(file);
     let filename = '';
     responseStream.subscribe({
@@ -126,14 +122,4 @@ export class UserController {
     });
     return responseStream;
   }
-
-  // @Get('/file/:filename')
-  // @ApiParam({ name: 'filename', type: 'string' })
-  // @ApiOkResponse()
-  // @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  // @ApiNotFoundResponse({ description: 'File not found' })
-  // getFile(@Param('filename') filename, @Res() res) {
-  //   console.log(filename);
-  //   return res.sendFile(filename, { root: './uploads' });
-  // }
 }

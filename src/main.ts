@@ -23,6 +23,7 @@ async function bootstrap() {
 
   // add grpc exception filter
   app.useGlobalFilters(new RpcExceptionToHttpFilter());
+
   await app.listen(3001);
 }
 bootstrap();

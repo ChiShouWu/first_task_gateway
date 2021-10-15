@@ -6,23 +6,25 @@ import {
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
-import { status } from '@grpc/grpc-js';
+import { status as RcpStatus } from '@grpc/grpc-js';
 
-@Catch(RpcException)
+@Catch()
 export class RpcExceptionToHttpFilter implements ExceptionFilter {
-  catch(exception: RpcException, host: ArgumentsHost) {
-    const err = exception.getError();
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const httpStatus = RpcStatusCodeTranform(exception['code']);
 
-    response.send({
-      code: RpcStatusCodeTranform(err['code']),
-      message: err['details'],
+    if (!httpStatus || httpStatus === HttpStatus.INTERNAL_SERVER_ERROR)
+      exception['details'] = 'Internal server error';
+
+    response.status(httpStatus).json({
+      status: httpStatus,
+      error: exception['details'],
     });
   }
 }
-
-export function RpcStatusCodeTranform(rpcCode: status): HttpStatus {
+function RpcStatusCodeTranform(rpcCode: RcpStatus): HttpStatus {
   interface TransformPair {
     [key: number]: HttpStatus;
   }
