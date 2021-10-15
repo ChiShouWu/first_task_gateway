@@ -4,7 +4,6 @@ import {
   ArgumentsHost,
   HttpStatus,
 } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import { Response } from 'express';
 import { status as RcpStatus } from '@grpc/grpc-js';
 

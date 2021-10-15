@@ -5,7 +5,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import {
   DeleteResponse,
   UploadRequest,
-  UploadStatus,
   UserInterface,
   UserMicroService,
 } from './models/user.model';
